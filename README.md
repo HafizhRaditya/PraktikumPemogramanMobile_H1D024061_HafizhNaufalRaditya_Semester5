@@ -1,6 +1,6 @@
 # Identitas
 
-Nama  : Hafizh Raditya
+Nama  : Hafizh Naufal Raditya
 NIM   : H1D024061
 Shift : A
 
