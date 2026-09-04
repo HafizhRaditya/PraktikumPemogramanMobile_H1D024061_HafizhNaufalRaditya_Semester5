@@ -1,7 +1,7 @@
 # Identitas
 
-Nama  : Hafizh Naufal Raditya
-NIM   : H1D024061
+Nama  : Hafizh Naufal Raditya  
+NIM   : H1D024061  
 Shift : A
 
 # Pertemuan 1 — Membuat Project & Dasar Compose
