@@ -18,7 +18,9 @@ Pertemuan 1.
 
 ## Display Pertemuan 1
 
-_Menyusul — screenshot aplikasi yang berjalan di perangkat._
+![Display Pertemuan 1](1-aplikasi.png)
+
+Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16.
 
 # Yang Diimplementasikan
 

@@ -196,14 +196,22 @@ fun LayoutTentangJualan(modifier: Modifier = Modifier) {
             //   teks pertama mendapat 1/3 (sekitar 33%) lebar Row
             //   teks kedua   mendapat 2/3 (sekitar 66%) lebar Row
             // Huruf f menandakan tipe data Float (angka desimal di Kotlin).
+            // color = Color.Black ditulis eksplisit, TIDAK dibiarkan mengikuti
+            // tema. Alasannya: latar Row dikunci abu-abu terang (0xFFE0E0E0),
+            // sedangkan warna teks bawaan tema berubah jadi hampir putih saat
+            // ponsel memakai mode gelap. Akibatnya teks putih di atas abu-abu
+            // terang - nyaris tidak terbaca. Karena latarnya warna tetap,
+            // warna teksnya pun harus tetap.
             Text(
                 text = "Misi Kami:",
                 modifier = Modifier.weight(1f),
+                color = Color.Black,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "Memajukan UMKM Lokal",
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(2f),
+                color = Color.Black
             )
         }
     }
