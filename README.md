@@ -68,7 +68,19 @@ sendiri.
 
 ### Display Pertemuan 2
 
-_Menyusul — screenshot kedua halaman saat dijalankan di perangkat._
+Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16.
+
+**1. BasicInfoScreen** — halaman informasi aplikasi
+
+![BasicInfoScreen](2-aplikasi-basicinfo.png)
+
+**2. HubungiKamiScreen** — halaman formulir
+
+![HubungiKamiScreen](3-aplikasi-hubungikami.png)
+
+**3. Snackbar** — muncul setelah tombol Kirim Pesan ditekan
+
+![Snackbar Pesan Terkirim](4-aplikasi-snackbar.png)
 
 ## Yang Diimplementasikan
 
