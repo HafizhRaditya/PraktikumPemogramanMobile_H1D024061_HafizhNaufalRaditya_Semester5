@@ -9,18 +9,34 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Primary,
+    onPrimary = Color.White,
+    secondary = Secondary,
+    onSecondary = Color.White,
+    tertiary = PrimaryVariant,
+    onTertiary = Color.White,
+    background = Color(0xFF121212),
+    surface = Color(0xFF1E1E1E),
+    onBackground = Color.White,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF2D2D2D),
+    onSurfaceVariant = Color(0xFFE0E0E0),
+
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Primary,
+    onPrimary = Color.White,
+    secondary = Secondary,
+    onSecondary = Color.White,
+    tertiary = PrimaryVariant,
+    onTertiary = Color.White,
+    background = Background,
+    surface = Surface
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -36,8 +52,17 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun JualanTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Modul Pertemuan 2 bagian H - Memahami Dynamic Color.
+    //
+    // Diubah dari true menjadi FALSE. Dynamic Color membuat warna aplikasi
+    // mengikuti wallpaper ponsel pada Android 12 ke atas. Akibatnya seluruh
+    // palet hijau yang sudah dirancang di Color.kt akan DIABAIKAN begitu saja
+    // di perangkat modern - termasuk HP yang dipakai menguji aplikasi ini.
+    //
+    // Dengan false, desain visual aplikasi terkunci: warnanya tetap seragam
+    // meski pengguna berganti-ganti wallpaper. Ini yang menjaga identitas
+    // merek sebuah aplikasi.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
