@@ -134,7 +134,19 @@ produk dua kolom yang tersaring sesuai kategori terpilih.
 
 ### Display Pertemuan 3
 
-Menyusul setelah aplikasi dijalankan di Samsung Galaxy A53 5G (SM-A536E).
+Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16, mode gelap.
+
+**1. DaftarProdukScreen** — kategori Makanan terpilih saat aplikasi dibuka
+
+![Daftar Produk UMKM](5-aplikasi-daftarproduk.png)
+
+**2. Pindah kategori** — setelah Minuman diketuk, kisi hanya berisi produk minuman
+
+![Kategori Minuman](6-aplikasi-kategori-minuman.png)
+
+**3. Toast** — muncul setelah kartu Es Dawet diketuk
+
+![Toast Clicked: Es Dawet](7-aplikasi-toast.png)
 
 ## Yang Diimplementasikan
 
