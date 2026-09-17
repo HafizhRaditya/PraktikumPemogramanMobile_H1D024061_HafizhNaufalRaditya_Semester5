@@ -11,10 +11,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Jualan">
+        <!--
+            Modul Pertemuan 3 bagian I.4: intent-filter LAUNCHER dihapus dari
+            MainActivity supaya tidak ada dua pintu masuk aplikasi.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:theme="@style/Theme.Jualan"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!--
+            Launcher Activity baru. android:label sengaja tidak ditulis:
+            tanpa label, Android memakai label <application> ("Jualan") untuk
+            nama di bawah ikon aplikasi, bukan "HomeActivity".
+        -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="true"
             android:theme="@style/Theme.Jualan"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

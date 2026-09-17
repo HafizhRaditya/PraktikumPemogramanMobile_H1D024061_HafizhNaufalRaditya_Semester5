@@ -1,0 +1,64 @@
+<!--
+    Gambar produk (modul Pertemuan 3 bagian E.3), rasio 1:1.
+    Dibuat sendiri sebagai Vector Drawable: tas belanja dengan daun, lambang
+    produk lokal UMKM, memakai palet hijau aplikasi Jualan.
+    Vector dipilih agar gambar tetap tajam di ukuran kartu berapa pun.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="480"
+    android:viewportHeight="480">
+
+    <!-- Lingkaran luar hijau -->
+    <path
+        android:fillColor="#3AA34B"
+        android:pathData="M20,240a220,220 0,1 0,440 0a220,220 0,1 0,-440 0Z" />
+
+    <!-- Cincin putih -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,240a196,196 0,1 0,392 0a196,196 0,1 0,-392 0Z" />
+
+    <!-- Bidang dalam hijau muda -->
+    <path
+        android:fillColor="#E3F4E5"
+        android:pathData="M58,240a182,182 0,1 0,364 0a182,182 0,1 0,-364 0Z" />
+
+    <!-- Tunas daun di belakang tas -->
+    <path
+        android:fillColor="#76BA43"
+        android:pathData="M240,196C214,176 180,172 150,184C170,210 206,220 240,212Z" />
+    <path
+        android:fillColor="#3AA34B"
+        android:pathData="M240,196C266,164 304,152 338,162C322,196 284,214 240,212Z" />
+
+    <!-- Tali tas -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0F8B88"
+        android:strokeWidth="14"
+        android:strokeLineCap="round"
+        android:pathData="M196,226L196,206A44,44 0,0 1,284 206L284,226" />
+
+    <!-- Badan tas -->
+    <path
+        android:fillColor="#0F8B88"
+        android:pathData="M150,222L330,222L346,350Q348,368 330,368L150,368Q132,368 134,350Z" />
+
+    <!-- Lipatan atas tas -->
+    <path
+        android:fillColor="#0C7471"
+        android:pathData="M150,222L330,222L332,240L148,240Z" />
+
+    <!-- Motif daun putih di badan tas -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M240,344C206,326 200,286 240,258C280,286 274,326 240,344Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0F8B88"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M240,336L240,272" />
+</vector>

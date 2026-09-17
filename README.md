@@ -120,3 +120,74 @@ app/src/main/
 │       └── Type.kt              # skala tipografi kustom
 └── res/drawable/                # back_icon, mail_icon, send_icon, info_icon
 ```
+
+
+---
+
+# Pertemuan 3 — Dynamic Lists with Lazy Layouts
+
+Melanjutkan aplikasi **Jualan**. Layar pembuka kini adalah halaman
+**Daftar Produk UMKM**: deretan kategori yang bisa digeser ke samping dan kisi
+produk dua kolom yang tersaring sesuai kategori terpilih.
+
+## Screenshot
+
+### Display Pertemuan 3
+
+Menyusul setelah aplikasi dijalankan di Samsung Galaxy A53 5G (SM-A536E).
+
+## Yang Diimplementasikan
+
+| Bagian modul | Penerapan |
+|---|---|
+| A. Package baru | `data.model` dan `data.dummy` |
+| B. Data class `Category` | `id: Int`, `name: String`, `description: String?`, `products_count: Int?` |
+| C. Data class `Product` | `id`, `category_id`, `category: Category?`, `name`, `description: String?`, `price: Double`, `stock`, `img` |
+| D. Data dummy | `object DummyData` (Singleton) berisi 3 kategori dan 15 produk khas Banyumas–Purbalingga, dibuat dengan `listOf()` |
+| E. `ProductItemCard` | `Card` dengan elevasi 4dp → `Column` → `Box` berisi `Image` rasio 1:1 dan label kategori di pojok kanan atas → nama produk (maks. 1 baris) dan harga |
+| E.3 Gambar produk | `dummy_product.xml`, Vector Drawable buatan sendiri (tas belanja dan daun, palet hijau aplikasi) |
+| F. `CategoryItem` | `Card` yang berganti warna: `primary` saat dipilih, `surfaceVariant` saat tidak |
+| G. `@Preview` | `PreviewProduct`, dan `PreviewCategory` dengan tombol kategori tepat di tengah layar |
+| H.1 State dan filter | `remember { mutableStateOf(...firstOrNull()?.id) }` untuk kategori terpilih, `filter { }` untuk menyaring produk |
+| H.1 TopAppBar | "Daftar Produk UMKM" tebal di atas latar `primary`, ikon keranjang `cart_icon` (Material Symbols) di kanan |
+| H.3 Kategori | `LazyRow` dengan `contentPadding` 16dp dan jarak antaritem 8dp |
+| H.4 Daftar produk | `LazyVerticalGrid` dua kolom (`GridCells.Fixed(2)`), jarak 16dp; ketuk kartu → `Toast` "Clicked: <nama produk>" |
+| H.5 Preview terang dan gelap | Dua anotasi `@Preview` pada `PreviewDaftarProduk`, yang kedua memakai `uiMode = UI_MODE_NIGHT_YES` |
+| I. `HomeActivity` | Activity baru sebagai Launcher Activity; `intent-filter` MAIN/LAUNCHER dipindahkan dari `MainActivity` |
+| J. Modifikasi `HomeActivity` | `onCreate` hanya memanggil `JualanTheme { DaftarProdukScreen() }`; fungsi bawaan templat dihapus |
+
+## Catatan
+
+- **Halaman Pertemuan 1–2 tidak lagi terbuka dari ikon aplikasi.** Sesuai
+  modul bagian I.4, `MainActivity` tidak lagi menjadi Launcher Activity.
+  Kodenya tetap ada dan tidak diubah.
+- **Label `HomeActivity` sengaja tidak ditulis di manifest.** Nama di bawah
+  ikon aplikasi diambil dari label Launcher Activity. Tanpa label sendiri,
+  Android memakai label aplikasi, sehingga tetap tertulis "Jualan", bukan
+  "HomeActivity".
+- **`key = { it.id }` ditambahkan** pada `items()` di `LazyRow` dan
+  `LazyVerticalGrid`. Dengan key, Compose mengenali setiap item lewat id-nya,
+  sehingga daftar tidak salah menggambar item saat isinya berganti karena
+  kategori dipilih.
+
+## Struktur berkas
+
+```
+app/src/main/
+├── AndroidManifest.xml              # HomeActivity sebagai launcher
+├── java/com/pemmob1/h1d024061/
+│   ├── HomeActivity.kt              # layar pembuka baru
+│   ├── MainActivity.kt              # halaman Pertemuan 1–2 (tidak diubah)
+│   ├── data/
+│   │   ├── model/
+│   │   │   ├── Category.kt          # data class kategori
+│   │   │   └── Product.kt           # data class produk
+│   │   └── dummy/
+│   │       └── DummyData.kt         # object berisi data tiruan
+│   └── ui/screen/
+│       └── DaftarProductScreen.kt   # ProductItemCard, CategoryItem,
+│                                    # DaftarProdukScreen, dan @Preview
+└── res/drawable/
+    ├── cart_icon.xml                # ikon keranjang di TopAppBar
+    └── dummy_product.xml            # gambar produk 1:1
+```
