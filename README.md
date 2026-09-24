@@ -150,7 +150,9 @@ Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16, mode gelap.
 
 ## Rekaman Layar
 
-Rekaman aplikasi berjalan di perangkat: 22 detik, tanpa suara.
+Aplikasi dibuka pada layar Daftar Produk UMKM, kategori dipilih sehingga kisi
+produk ikut tersaring, lalu kartu produk diketuk sampai Toast muncul.
+Durasi 22 detik, tanpa suara.
 
 [8-rekaman-aplikasi.mp4](8-rekaman-aplikasi.mp4)
 
