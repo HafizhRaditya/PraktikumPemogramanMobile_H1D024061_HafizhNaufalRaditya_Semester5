@@ -214,3 +214,114 @@ app/src/main/
     ├── cart_icon.xml                # ikon keranjang di TopAppBar
     └── dummy_product.xml            # gambar produk 1:1
 ```
+
+# Pertemuan 4 — Recomposition dan UI Lifecycle
+
+Melanjutkan aplikasi **Jualan**. Halaman daftar produk kini punya kolom
+pencarian dengan indikator memuat, kartu produk membuka **halaman detail**, dan
+formulir Hubungi Kami dilengkapi dropdown, unggah gambar, kotak centang, serta
+validasi. Seluruh layar dipecah menjadi pasangan **stateful** dan **stateless**
+sesuai pola State Hoisting.
+
+## Screenshot
+
+### Display Pertemuan 4
+
+Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16, mode gelap.
+
+**1. Daftar produk** — kolom pencarian, ikon keranjang, dan menu tiga titik
+
+![Daftar Produk](9-p4-daftar-produk.png)
+
+**2. Indikator memuat** — muncul selama `delay(1000)` di dalam `LaunchedEffect`,
+setiap kali kategori diganti atau kata kunci diketik
+
+![Mencari data](10-p4-loading.png)
+
+**3. Pencarian** — mengetik "kripik" menyaring kisi produk
+
+![Cari produk](11-p4-cari-produk.png)
+
+**4. Hasil kosong** — kata kunci "nasi goreng" tidak cocok dengan produk mana pun
+
+![Produk tidak ditemukan](12-p4-tidak-ditemukan.png)
+
+**5. Menu Action** — menu tiga titik berisi pintasan ke Hubungi Kami
+
+![Menu Action](13-p4-menu-action.png)
+
+**6. Detail produk** — dibuka dari kartu produk, lengkap dengan pengatur jumlah
+beli dan Toast setelah tombol keranjang ditekan
+
+![Detail Produk](14-p4-detail-produk.png)
+
+**7. Formulir Hubungi Kami** — tombol Kirim mati karena formulir belum sah
+
+![Form Hubungi Kami](15-p4-form-kosong.png)
+
+**8. Dropdown Tipe Pesan** — tiga pilihan dari `ExposedDropdownMenuBox`
+
+![Dropdown Tipe Pesan](16-p4-dropdown.png)
+
+**9. Validasi email** — teks tanpa "@" langsung ditandai merah
+
+![Validasi email](17-p4-validasi-email.png)
+
+**10. Pesan terkirim** — setelah semua syarat terpenuhi, tombol menyala dan
+Snackbar muncul
+
+![Snackbar Pesan Terkirim](18-p4-form-terkirim.png)
+
+## Yang Diimplementasikan
+
+| Bagian modul | Penerapan |
+|---|---|
+| A. Permissions | `READ_MEDIA_IMAGES` dan `READ_EXTERNAL_STORAGE` (`maxSdkVersion="32"`) dideklarasikan di atas tag `<application>` |
+| B.1 Deklarasi variabel | `emailText` dan `messageText` dengan `remember`; `problemType` dan `isAgreed` dengan `rememberSaveable`; `imageUri` bertipe `Uri?` |
+| B.2 Validasi | `isEmailValid` (`contains("@")` + `isNotBlank()`), `isMessageValid` (`length >= 10`), `isFormValid` (gabungan seluruh syarat) |
+| B.3 State Hoisting | `StatelessFormHubungiKami` menerima nilai (`email`) dan lambda (`onEmailChange`); tidak menyimpan data sendiri |
+| B.4 PhotoPicker | `rememberLauncherForActivityResult` + `ActivityResultContracts.PickVisualMedia()`, dibuka dengan `PickVisualMediaRequest(ImageOnly)` |
+| B.8 Validasi di UI | `isError` dan `supportingText` pada `OutlinedTextField` |
+| B.9 Dropdown | `ExposedDropdownMenuBox` + `ExposedDropdownMenu`, kolom `readOnly = true`, `menuAnchor(MenuAnchorType.PrimaryNotEditable)` |
+| B.10 Bukti dan persetujuan | `Card` hanya dirender saat `imageUri != null`, menampilkan `imageUri.lastPathSegment`; `Checkbox` stateless |
+| B.11 Tombol kirim | `enabled = isFormValid`, `onClick = onSubmit` |
+| C.1 Parameter navigasi | `DaftarProdukScreen(navController: NavController? = null)` |
+| C.2 Asinkron | `LaunchedEffect(selectedCategoryId, searchQuery)` dengan `delay(1000)`, menyaring kategori lalu kata kunci (`ignoreCase = true`) |
+| C.3 Stateless | `StatelessDaftarProduct` menerima `categories`, `products`, `isLoading`, dan empat lambda |
+| C.5 Pencarian | `OutlinedTextField` dengan `singleLine = true` di atas daftar kategori |
+| C.7 Tiga kondisi | `CircularProgressIndicator` + "Mencari data..." saat memuat, "Produk tidak ditemukan." saat kosong, `LazyVerticalGrid` saat ada isi |
+| D. Detail produk | `DetailProductScreen` (stateful, memuat produk lewat `find`) dan `StatelessDetailProduct` (Scaffold, gambar, deskripsi, pengatur jumlah, tombol keranjang) |
+| E. Navigasi | `NavHost` di `HomeActivity` dengan rute `daftar_produk`, `detail/{productId}` (`NavType.IntType`), dan `hubungi_kami` |
+| F. Menu Action | `IconButton` tiga titik + `DropdownMenu` berisi "Hubungi Kami" |
+
+## Catatan
+
+- **Ikon disimpan sendiri di `res/drawable`.** Proyek ini tidak memakai pustaka
+  `material-icons`, jadi `Icons.Default.MoreVert` dan `Icons.Default.Email` pada
+  modul diganti dengan `more_vert_icon.xml` dan `mail_icon.xml` yang diimpor
+  lewat **Vector Asset**, mengikuti cara yang dipakai sejak Pertemuan 2.
+- **`menuAnchor()` tanpa argumen sudah usang** pada versi Material 3 yang
+  dipakai proyek ini, sehingga ditulis
+  `menuAnchor(MenuAnchorType.PrimaryNotEditable)`.
+- **Izin penyimpanan tetap dideklarasikan** sesuai bagian A modul, meskipun
+  `PickVisualMedia` sebenarnya tidak memerlukannya. Pemilih foto sistem
+  menyerahkan satu gambar terpilih tanpa memberi aplikasi akses ke seluruh
+  galeri.
+- Semua fitur di atas sudah diuji langsung di perangkat, termasuk pemilih foto
+  sistem yang terbuka saat tombol Unggah Bukti ditekan.
+
+## Struktur berkas
+
+```
+app/src/main/
+├── AndroidManifest.xml               # + uses-permission untuk galeri
+├── java/com/pemmob1/h1d024061/
+│   ├── HomeActivity.kt               # NavHost: daftar_produk, detail/{productId}, hubungi_kami
+│   └── ui/screen/
+│       ├── DaftarProductScreen.kt    # DaftarProdukScreen + StatelessDaftarProduct
+│       ├── DetailProductScreen.kt    # DetailProductScreen + StatelessDetailProduct
+│       └── HubungiKamiScreen.kt      # HubungiKamiScreen + StatelessFormHubungiKami
+└── res/drawable/
+    ├── icon_check.xml                # centang pada kartu berkas terpilih
+    └── more_vert_icon.xml            # ikon tiga titik di AppBar
+```

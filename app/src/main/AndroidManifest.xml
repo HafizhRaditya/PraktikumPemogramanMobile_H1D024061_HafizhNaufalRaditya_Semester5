@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        Modul Pertemuan 4 bagian A - Modifikasi Permissions.
+        Aplikasi berjalan di dalam sandbox dan tidak bisa membaca galeri foto
+        tanpa izin. READ_MEDIA_IMAGES dipakai sejak Android 13 (API 33);
+        READ_EXTERNAL_STORAGE dibatasi maxSdkVersion 32 karena izin itu sudah
+        tidak berlaku di Android 13 ke atas.
+    -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
