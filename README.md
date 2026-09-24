@@ -148,6 +148,15 @@ Dijalankan di Samsung Galaxy A53 5G (SM-A536E), Android 16, mode gelap.
 
 ![Toast Clicked: Es Dawet](7-aplikasi-toast.png)
 
+## Rekaman Layar
+
+Rekaman aplikasi berjalan di perangkat: 22 detik, tanpa suara.
+
+[8-rekaman-aplikasi.mp4](8-rekaman-aplikasi.mp4)
+
+> Klik tautan di atas untuk membuka berkasnya di GitHub. Video diputar di
+> halaman berkas tersebut; README sendiri tidak bisa memutar video.
+
 ## Yang Diimplementasikan
 
 | Bagian modul | Penerapan |
