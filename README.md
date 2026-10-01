@@ -414,7 +414,22 @@ StatelessDaftarProduct / StatelessDetailProduct (hanya menggambar)
   kode Pertemuan 5.
 - `ApiClient` sudah dicoba memanggil server asli: 3 kategori dan 15 produk
   terbaca, dan setiap produk mendapat kategorinya.
-- Screenshot dan uji di perangkat menyusul.
+- Diuji di Samsung Galaxy A53 5G (SM-A536E), Android 16, mode gelap:
+  - daftar produk terisi dari API, dan gambar `produk.jpeg` dari server tampil
+    di kartu produk maupun di halaman detail
+  - berganti kategori (Makanan, Minuman, Kerajinan) menampilkan produk yang
+    sesuai, lengkap dengan label kategorinya
+  - pencarian `KRIPIK` menemukan "Kripik Singkong" (huruf besar-kecil
+    diabaikan); `nasi goreng` menampilkan "Produk tidak ditemukan."
+  - halaman detail: tombol `+` dan `-` mengubah jumlah, tombol keranjang
+    memunculkan Toast "Membeli sebanyak 3", tombol kembali pulang ke daftar
+    dengan kata kunci pencarian yang masih utuh
+  - menu tiga titik tetap membuka halaman Hubungi Kami
+  - state **Loading** dan **Error** diuji dengan build sementara yang
+    `BASE_URL`-nya diarahkan ke alamat yang tidak bisa dihubungi: indikator
+    memuat tampil, lalu setelah batas waktu 10 detik muncul pesan
+    "Error: Gagal memuat data: failed to connect to ...". Build itu tidak
+    ikut di-commit.
 
 ## Struktur berkas
 
