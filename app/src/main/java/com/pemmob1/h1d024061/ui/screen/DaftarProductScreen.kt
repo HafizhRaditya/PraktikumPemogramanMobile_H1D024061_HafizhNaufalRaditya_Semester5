@@ -1,7 +1,6 @@
 package com.pemmob1.h1d024061.ui.screen
 
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,11 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,16 +52,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.pemmob1.h1d024061.R
-import com.pemmob1.h1d024061.data.dummy.DummyData
 import com.pemmob1.h1d024061.data.model.Category
 import com.pemmob1.h1d024061.data.model.Product
 import com.pemmob1.h1d024061.ui.theme.JualanTheme
-import kotlinx.coroutines.delay
+import com.pemmob1.h1d024061.ui.viewmodel.ProductUiState
+import com.pemmob1.h1d024061.ui.viewmodel.ProductViewModel
+import com.pemmob1.h1d024061.util.JualanConstants.BASE_URL
 
 // ============================================================================
 // Modul Pertemuan 3 bagian E sampai H - Dynamic Lists with Lazy Layouts
 // Modul Pertemuan 4 bagian C dan F  - Recomposition, pencarian, dan Menu Action
+// Modul Pertemuan 5 bagian I dan J  - Data dari API (ViewModel) dan gambar Coil
 // ============================================================================
 // Halaman daftar produk UMKM: kolom pencarian, deretan kategori yang bisa
 // digeser ke samping (LazyRow), dan kisi produk dua kolom (LazyVerticalGrid).
@@ -95,17 +98,25 @@ fun ProductItemCard(product: Product, onClick: () -> Unit) {
         // E.3 - Column dan Box di dalam Card
         Column(modifier = Modifier.padding(12.dp)) {
 
+            // Modul Pertemuan 5 bagian J - sumber gambar.
             // if-else di Kotlin adalah EKSPRESI: hasilnya bisa langsung
-            // disimpan ke variabel tanpa membuat variabel kosong lebih dulu.
-            // Semua produk dummy memakai gambar yang sama, jadi kedua cabang
-            // mengembalikan gambar cadangan yang sama.
-            val imageRes = if (product.img == "dummy_product") R.drawable.dummy_product else R.drawable.dummy_product
+            // disimpan ke variabel. Tipe `Any` dipakai karena kedua cabang
+            // berbeda jenis: id drawable (Int) untuk gambar bawaan aplikasi,
+            // atau alamat URL (String) untuk gambar di server. BASE_URL sudah
+            // diakhiri "/", jadi tidak ditambah garis miring lagi.
+            val imageModel: Any = if (product.img == "dummy_product") {
+                R.drawable.dummy_product
+            } else {
+                BASE_URL + "img/${product.img}"
+            }
 
             Box(modifier = Modifier.fillMaxWidth()) {
 
-                // E.4 - Gambar produk berbentuk persegi (rasio 1:1)
-                Image(
-                    painter = painterResource(id = imageRes),
+                // AsyncImage (Coil) mengunduh gambar di background, lalu
+                // menyimpannya di cache. Image bawaan Compose hanya bisa
+                // menampilkan gambar yang sudah ada di dalam aplikasi.
+                AsyncImage(
+                    model = imageModel,
                     contentDescription = product.name,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -189,75 +200,102 @@ fun CategoryItem(category: Category, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 /**
- * Modul Pertemuan 4 bagian C - halaman daftar produk, versi STATEFUL.
+ * Modul Pertemuan 5 bagian I - halaman daftar produk, versi STATEFUL.
  *
- * Tugasnya hanya memegang state dan menyiapkan data:
- *   - kategori yang dipilih dan kata kunci pencarian
- *   - status memuat (isLoading) dan hasil penyaringan (filteredProducts)
+ * Sejak Pertemuan 5 data tidak lagi diambil dari DummyData, melainkan dari
+ * [ProductViewModel] yang mengunduhnya lewat API. Fungsi ini hanya:
+ *   - memegang state milik layar (kategori terpilih dan kata kunci)
+ *   - membaca uiState, lalu memilih tampilan yang sesuai
  *
- * Seluruh urusan menggambar diserahkan ke StatelessDaftarProduct.
+ * Seluruh urusan menggambar daftar diserahkan ke StatelessDaftarProduct.
  *
- * @param navController pengendali navigasi. Nullable supaya @Preview tetap
- *        bisa memanggil fungsi ini tanpa NavController sungguhan.
+ * @param navController pengendali navigasi. Nullable supaya fungsi ini tetap
+ *        bisa dipanggil tanpa NavController sungguhan.
+ * @param viewModel dibuat di HomeActivity dan dikirim ke sini, sehingga
+ *        halaman daftar dan halaman detail memakai data yang sama.
  */
 @Composable
-fun DaftarProdukScreen(navController: NavController? = null) {
+fun DaftarProdukScreen(navController: NavController? = null, viewModel: ProductViewModel) {
 
     // rememberSaveable: pilihan kategori dan kata kunci pencarian tetap ada
-    // setelah layar diputar. isLoading dan filteredProducts cukup remember,
-    // karena keduanya dihitung ulang oleh LaunchedEffect di bawah.
-    var selectedCategoryId by rememberSaveable { mutableStateOf(DummyData.categories.firstOrNull()?.id) }
+    // setelah layar diputar. Nilai awal kategori null, karena daftar kategori
+    // baru diketahui setelah server menjawab.
+    var selectedCategoryId by rememberSaveable { mutableStateOf<Int?>(null) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var filteredProducts by remember { mutableStateOf(emptyList<Product>()) }
 
-    // ------------------------------------------------------------------
-    // Modul Pertemuan 4 bagian C.2 - LaunchedEffect (proses asinkron)
-    // ------------------------------------------------------------------
-    // LaunchedEffect menjalankan coroutine di dalam Composable. Blok ini
-    // dijalankan ulang setiap kali salah satu kuncinya berubah, yaitu ketika
-    // pengguna berganti kategori atau mengetik di kolom pencarian.
-    //
-    // delay(1000) adalah suspend function: ia menunda coroutine ini saja,
-    // bukan membekukan layar. Di sini dipakai untuk meniru lambatnya
-    // pengambilan data dari server, supaya indikator loading terlihat.
-    LaunchedEffect(selectedCategoryId, searchQuery) {
-        isLoading = true
+    // collectAsState mengubah StateFlow milik ViewModel menjadi State Compose.
+    // Setiap kali ViewModel mengganti uiState, fungsi ini digambar ulang.
+    val uiState by viewModel.uiState.collectAsState()
 
-        delay(1000)
+    // Surface memberi warna latar dan warna teks sesuai tema. Tanpa ini,
+    // tampilan Loading dan Error muncul di atas latar putih bawaan jendela,
+    // yang terlihat janggal saat HP memakai mode gelap.
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 
-        val filteredByCategory = if (selectedCategoryId != null) {
-            DummyData.products.filter { it.category_id == selectedCategoryId }
-        } else {
-            DummyData.products
+        // `when (val state = uiState)` menyimpan uiState ke variabel lokal
+        // supaya smart cast bekerja: di cabang Success, `state` otomatis
+        // dikenali sebagai ProductUiState.Success sehingga state.products
+        // bisa dibaca.
+        when (val state = uiState) {
+
+            is ProductUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            is ProductUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Error: ${state.message}",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+            }
+
+            is ProductUiState.Success -> {
+                // Begitu data tiba, kategori pertama otomatis terpilih.
+                if (selectedCategoryId == null && state.categories.isNotEmpty()) {
+                    selectedCategoryId = state.categories.first().id
+                }
+
+                // Penyaringan bertingkat: per kategori dulu, lalu hasilnya
+                // disaring lagi dengan kata kunci. Tidak perlu LaunchedEffect
+                // dan delay lagi, karena datanya sudah ada di memori dan
+                // penyaringan dihitung ulang setiap recomposition.
+                val filteredByCategory = if (selectedCategoryId != null) {
+                    state.products.filter { it.category_id == selectedCategoryId }
+                } else {
+                    state.products
+                }
+
+                // ignoreCase = true agar "kripik" dan "Kripik" dianggap sama.
+                val filteredProducts = if (searchQuery.isBlank()) {
+                    filteredByCategory
+                } else {
+                    filteredByCategory.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                }
+
+                StatelessDaftarProduct(
+                    categories = state.categories,
+                    selectedCategoryId = selectedCategoryId,
+                    onCategorySelected = { selectedCategoryId = it },
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    // Sudah pasti selesai memuat: cabang ini hanya dijalankan
+                    // saat uiState bernilai Success.
+                    isLoading = false,
+                    products = filteredProducts,
+                    // Alamat rute dibentuk dengan menyisipkan id produk, lalu
+                    // dibaca lagi oleh NavHost di HomeActivity sebagai
+                    // argumen productId.
+                    onProductClick = { product -> navController?.navigate("detail/${product.id}") },
+                    onContactUsClick = { navController?.navigate("hubungi_kami") },
+                )
+            }
         }
-
-        // Penyaringan bertingkat: hasil saringan kategori disaring lagi dengan
-        // kata kunci. ignoreCase = true agar "kripik" dan "Kripik" sama saja.
-        filteredProducts = if (searchQuery.isBlank()) {
-            filteredByCategory
-        } else {
-            filteredByCategory.filter { it.name.contains(searchQuery, ignoreCase = true) }
-        }
-
-        isLoading = false
     }
-
-    // Modul bagian C.10 - memanggil versi stateless. Data turun lewat
-    // parameter, kejadian naik lewat lambda.
-    StatelessDaftarProduct(
-        categories = DummyData.categories,
-        selectedCategoryId = selectedCategoryId,
-        onCategorySelected = { selectedCategoryId = it },
-        searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it },
-        isLoading = isLoading,
-        products = filteredProducts,
-        // Alamat rute dibentuk dengan menyisipkan id produk, lalu dibaca lagi
-        // oleh NavHost di HomeActivity sebagai argumen productId.
-        onProductClick = { product -> navController?.navigate("detail/${product.id}") },
-        onContactUsClick = { navController?.navigate("hubungi_kami") },
-    )
 }
 
 /**
@@ -346,7 +384,7 @@ fun StatelessDaftarProduct(
 
             // Modul bagian C.5 - kolom pencarian. Nilainya datang dari induk,
             // dan setiap ketukan huruf dilaporkan lewat onSearchQueryChange,
-            // yang membuat LaunchedEffect berjalan lagi.
+            // sehingga induk menyaring ulang daftar produknya.
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -430,13 +468,25 @@ fun StatelessDaftarProduct(
 // ---------------------------------------------------------------------------
 // Pratinjau dengan @Preview
 // Tampil di panel Android Studio tanpa perlu menjalankan aplikasi.
+//
+// Modul Pertemuan 5 bagian B: DummyData sudah dihapus. Pratinjau tidak bisa
+// memanggil API, jadi dipakai data contoh kecil di bawah ini. Data ini HANYA
+// dipakai pratinjau; aplikasi yang berjalan selalu mengambil data dari server.
 // ---------------------------------------------------------------------------
+
+private val contohKategori =
+    Category(id = 1, name = "Makanan", description = "Aneka Makanan Lokal", products_count = 2)
+
+private val contohProduk = listOf(
+    Product(1, 1, contohKategori, "Kripik Singkong", "Kripik gurih", 15000.0, 50, "dummy_product"),
+    Product(2, 1, contohKategori, "Mendoan", "Mendoan asli Purbalingga", 20000.0, 30, "dummy_product"),
+)
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewProduct() {
     JualanTheme {
-        ProductItemCard(product = DummyData.products[0], onClick = {})
+        ProductItemCard(product = contohProduk[0], onClick = {})
     }
 }
 
@@ -453,14 +503,15 @@ fun PreviewCategory() {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            CategoryItem(category = DummyData.categories[0], isSelected = true, onClick = {})
+            CategoryItem(category = contohKategori, isSelected = true, onClick = {})
         }
     }
 }
 
 /**
  * Pratinjau halaman penuh dalam tema TERANG dan GELAP sekaligus. Versi
- * stateless yang dipakai, supaya pratinjau tidak ikut menunggu delay(1000).
+ * stateless yang dipakai, karena versi stateful membutuhkan ViewModel yang
+ * langsung memanggil API.
  */
 @Preview(name = "Light", showSystemUi = true)
 @Preview(
@@ -472,13 +523,13 @@ fun PreviewCategory() {
 fun PreviewDaftarProduk() {
     JualanTheme {
         StatelessDaftarProduct(
-            categories = DummyData.categories,
-            selectedCategoryId = DummyData.categories.first().id,
+            categories = listOf(contohKategori),
+            selectedCategoryId = contohKategori.id,
             onCategorySelected = {},
             searchQuery = "",
             onSearchQueryChange = {},
             isLoading = false,
-            products = DummyData.products.filter { it.category_id == 1 },
+            products = contohProduk,
             onProductClick = {},
             onContactUsClick = {},
         )

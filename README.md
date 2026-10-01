@@ -334,3 +334,104 @@ app/src/main/
     ├── icon_check.xml                # centang pada kartu berkas terpilih
     └── more_vert_icon.xml            # ikon tiga titik di AppBar
 ```
+
+# Pertemuan 5 — Networking & Architecture
+
+Melanjutkan aplikasi **Jualan**. Data kategori dan produk tidak lagi ditulis di
+dalam aplikasi (`DummyData` dihapus), melainkan diunduh dari **REST API** dengan
+**Retrofit**. Data itu dipegang sebuah **ViewModel** yang mengabarkan kondisi
+layar lewat `ProductUiState` (Loading, Success, Error), dan gambar produk dimuat
+dari server dengan **Coil**.
+
+Sumber data:
+
+- `https://pemmob-if.web.app/data/categories.json`
+- `https://pemmob-if.web.app/data/products.json`
+- `https://pemmob-if.web.app/img/<nama berkas>` untuk gambar produk
+
+## Alur data
+
+```
+Server (JSON)
+   │  GET data/categories.json, data/products.json
+   ▼
+ApiClient.instance  ──  Retrofit + GsonConverterFactory (JSON -> data class)
+   │
+   ▼
+ProductViewModel    ──  viewModelScope.launch { try { ... } catch { ... } }
+   │  memasangkan tiap produk dengan kategorinya: product.copy(category = ...)
+   │  _uiState.value = Loading / Success / Error
+   ▼
+uiState: StateFlow<ProductUiState>
+   │  collectAsState()
+   ▼
+DaftarProdukScreen / DetailProductScreen  ──  when (val state = uiState)
+   ▼
+StatelessDaftarProduct / StatelessDetailProduct (hanya menggambar)
+```
+
+## Yang Diimplementasikan
+
+| Bagian modul | Penerapan |
+|---|---|
+| B. Hapus data dummy | Package `data/dummy` dan `DummyData.kt` dihapus; seluruh `import` dan pemakaiannya dibersihkan |
+| C. Constant | `util/JualanConstants.kt`: `object JualanConstants` dengan `const val BASE_URL = "https://pemmob-if.web.app/"` |
+| D. Izin internet | `<uses-permission android:name="android.permission.INTERNET" />` di `AndroidManifest.xml` |
+| E. Retrofit | `retrofit = "3.0.0"` di `libs.versions.toml`; `implementation(libs.retrofit)` dan `implementation(libs.retrofit.converter.gson)` |
+| F. API Interface & Client | `network/ApiInterface.kt`: `interface ApiInterface` dengan dua `@GET` + `suspend fun`; `object ApiClient` dengan `val instance: ApiInterface by lazy { Retrofit.Builder()... }` |
+| G. ViewModel | `ui/viewmodel/ProductViewModel.kt`: `sealed interface ProductUiState` (`Loading`, `Success`, `Error`), `MutableStateFlow` private + `StateFlow` publik, `init { fetchData() }`, `viewModelScope.launch` dengan `try-catch` |
+| H. Detail produk | `DetailProductScreen(productId, navController, viewModel)` membaca `uiState` dengan `collectAsState()`; `LaunchedEffect` + `delay` dihapus; parameter `isLoading` dihapus dari `StatelessDetailProduct`; produk dicari dengan `state.products.find { it.id == productId }` |
+| I. Daftar produk | `DaftarProdukScreen(navController, viewModel)`; kategori pertama otomatis terpilih begitu data tiba; penyaringan kategori lalu kata kunci dihitung langsung dari `state.products` |
+| J. Coil | `coil = "2.6.0"`, `implementation(libs.coil.compose)`; `Image` diganti `AsyncImage` di `ProductItemCard` dan `StatelessDetailProduct`, dengan `model` berupa drawable bawaan atau URL `BASE_URL + "img/..."` |
+| K. HomeActivity | `val productViewModel: ProductViewModel = viewModel()` dibuat sekali di luar `NavHost`, lalu dikirim ke halaman daftar dan halaman detail |
+
+## Catatan
+
+- **Pratinjau tidak dikomentari, tetapi diberi data contoh.** Modul meminta kode
+  yang memakai `DummyData` dijadikan komentar. Supaya `@Preview` tetap bisa
+  dipakai, pratinjau di sini memakai dua produk contoh bertanda `private` yang
+  hanya hidup di pratinjau. Aplikasi yang berjalan selalu memakai data server.
+- **Alamat gambar ditulis `BASE_URL + "img/..."`.** `BASE_URL` sudah diakhiri
+  `/`, jadi bentuk `"$BASE_URL/img/..."` menghasilkan garis miring ganda
+  (`...web.app//img/produk.jpeg`). Server menjawab alamat itu dengan kode 307
+  (redirect), sedangkan alamat bergaris miring tunggal langsung dijawab 200.
+- **Tidak ada dependensi tambahan untuk `viewModel()`.** Fungsi itu berasal dari
+  `lifecycle-viewmodel-compose`, yang sudah ikut terbawa oleh
+  `navigation-compose` sejak Pertemuan 4.
+- **Tampilan Loading dan Error dibungkus `Surface`.** Kedua tampilan itu tidak
+  memakai `Scaffold`, sehingga tanpa `Surface` latarnya mengikuti jendela
+  aplikasi yang berwarna terang walaupun HP memakai mode gelap.
+- **Label kategori juga tampil di halaman detail**, di pojok gambar, seperti
+  pada gambar hasil akhir modul. Nama kategorinya berasal dari pemasangan
+  produk–kategori yang dilakukan `ProductViewModel`.
+- **Data hanya diunduh sekali.** `ProductViewModel` dibuat di tingkat Activity,
+  jadi berpindah ke halaman detail lalu kembali, atau memutar layar, tidak
+  memicu unduhan ulang.
+
+## Pemeriksaan
+
+- `assembleDebug` dan `lintDebug` berhasil; tidak ada peringatan lint baru dari
+  kode Pertemuan 5.
+- `ApiClient` sudah dicoba memanggil server asli: 3 kategori dan 15 produk
+  terbaca, dan setiap produk mendapat kategorinya.
+- Screenshot dan uji di perangkat menyusul.
+
+## Struktur berkas
+
+```
+app/src/main/
+├── AndroidManifest.xml               # + izin INTERNET
+├── java/com/pemmob1/h1d024061/
+│   ├── HomeActivity.kt               # membuat ProductViewModel dengan viewModel()
+│   ├── data/model/                   # Category, Product (cocok dengan kunci JSON)
+│   ├── network/
+│   │   └── ApiInterface.kt           # ApiInterface (@GET) + ApiClient (Retrofit)
+│   ├── ui/screen/
+│   │   ├── DaftarProductScreen.kt    # when (uiState) + AsyncImage di kartu produk
+│   │   └── DetailProductScreen.kt    # when (uiState) + AsyncImage
+│   ├── ui/viewmodel/
+│   │   └── ProductViewModel.kt       # ProductUiState + ProductViewModel
+│   └── util/
+│       └── JualanConstants.kt        # BASE_URL
+gradle/libs.versions.toml             # + retrofit 3.0.0, coil 2.6.0
+```

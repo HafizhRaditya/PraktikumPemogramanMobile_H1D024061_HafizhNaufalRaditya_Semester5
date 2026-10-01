@@ -8,6 +8,10 @@ package com.pemmob1.h1d024061.data.model
 //   - category_id -> angka, dipakai untuk MENYARING produk per kategori
 //   - category    -> objek lengkap, dipakai untuk MENAMPILKAN nama kategori
 //                    pada label kartu produk. Boleh null.
+//
+// Pertemuan 5: objek ini diisi Gson dari products.json. JSON itu tidak punya
+// kunci "category", sehingga category bernilai null sampai ProductViewModel
+// memasangkannya dengan kategori yang id-nya sama.
 // ============================================================================
 
 data class Product(
@@ -19,6 +23,8 @@ data class Product(
     // Double karena harga bisa memuat pecahan, contoh 15000.0
     val price: Double,
     val stock: Int,
-    // Nama berkas gambar produk di res/drawable, contoh "dummy_product"
+    // Nama berkas gambar produk. Sejak Pertemuan 5 nilainya datang dari API:
+    // "dummy_product" berarti pakai gambar bawaan di res/drawable, selain itu
+    // (contoh "produk.jpeg") gambar diunduh dari folder img/ di server.
     val img: String,
 )

@@ -48,6 +48,14 @@ dependencies {
     // Modul Pertemuan 2 bagian D.5 - sistem navigasi antar halaman
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+
+    // Modul Pertemuan 5 bagian E - Retrofit (klien HTTP) dan konverter JSON Gson
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    // Modul Pertemuan 5 bagian J - Coil, pemuat gambar dari URL
+    implementation(libs.coil.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

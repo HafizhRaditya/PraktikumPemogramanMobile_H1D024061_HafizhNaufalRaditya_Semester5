@@ -14,6 +14,14 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
+    <!--
+        Modul Pertemuan 5 bagian D - izin akses internet.
+        Tanpa izin ini setiap permintaan ke server ditolak sistem. INTERNET
+        tergolong izin "normal": cukup dideklarasikan di sini, tidak perlu
+        dialog persetujuan saat aplikasi berjalan.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
