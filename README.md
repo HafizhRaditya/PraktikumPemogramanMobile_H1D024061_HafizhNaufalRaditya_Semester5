@@ -272,6 +272,15 @@ Snackbar muncul
 
 ![Snackbar Pesan Terkirim](18-p4-form-terkirim.png)
 
+## Rekaman Layar
+
+Rekaman aplikasi Pertemuan 4 berjalan di perangkat, durasi 19 detik.
+
+[19-p4-rekaman-aplikasi.mp4](19-p4-rekaman-aplikasi.mp4)
+
+> Klik tautan di atas untuk membuka berkasnya di GitHub. Video diputar di
+> halaman berkas tersebut; README sendiri tidak bisa memutar video.
+
 ## Yang Diimplementasikan
 
 | Bagian modul | Penerapan |
